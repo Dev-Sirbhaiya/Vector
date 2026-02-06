@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Browser Agent</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <style>
+    /* Preserve the original agent styles exactly */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f5;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <!-- Agent's React bundle - UNCHANGED -->
+  <script defer="defer" src="sidepanel.js"></script>
+  <!-- Dashboard integration module -->
+  <script defer src="dashboard.js"></script>
+</head>
+
+<body>
+
+  <!-- TAB NAVIGATION BAR -->
+  <nav id="dashboard-nav" class="dashboard-nav">
+    <button class="nav-tab active" data-tab="agent">
+      <span class="nav-icon">&#x1F916;</span>
+      <span class="nav-label">Agent</span>
+    </button>
+    <button class="nav-tab" data-tab="voice">
+      <span class="nav-icon">&#x1F3A4;</span>
+      <span class="nav-label">Voice</span>
+    </button>
+    <button class="nav-tab" data-tab="accessibility">
+      <span class="nav-icon">&#x267F;</span>
+      <span class="nav-label">Access</span>
+    </button>
+    <button class="nav-tab" data-tab="settings">
+      <span class="nav-icon">&#x2699;</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </nav>
+
+  <!-- TAB: AI Agent (the React app mounts here) -->
+  <div id="tab-agent" class="tab-panel active">
+    <div id="root"></div>
+  </div>
+
+  <!-- TAB: Voice Control -->
+  <div id="tab-voice" class="tab-panel" style="display:none;">
+    <div class="dashboard-section">
+
+      <!-- Voice Commands - Simple speak and execute -->
+      <div class="voice-commands-card">
+        <div class="card-header">
+          <h3>🎤 Voice Commands</h3>
+          <label class="switch">
+            <input type="checkbox" id="voice-commands-toggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <p class="card-description">
+          Speak commands and the agent will execute them. Toggle on to start listening.
+        </p>
+        <div id="voice-commands-status" class="workflow-status">Off</div>
+        <div id="voice-commands-feedback" class="step-indicator"></div>
+      </div>
+
+      <!-- Voice Workflow Toggle -->
+      <div class="voice-workflow-card">
+        <div class="card-header">
+          <h3>Voice Workflow</h3>
+          <label class="switch">
+            <input type="checkbox" id="voice-workflow-toggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <p class="card-description">
+          Auto-cycle: describe page via TTS, listen for your command via STT, send to agent, repeat.
+        </p>
+        <div id="workflow-status" class="workflow-status">Off</div>
+        <div id="workflow-step-indicator" class="step-indicator"></div>
+      </div>
+
+      <!-- DOM Page Description -->
+      <div class="feature-card">
+        <h3>Page Description</h3>
+        <button id="describe-page-btn" class="btn-action">
+          <span>&#x1F50D;</span> Describe Current Page
+        </button>
+        <div id="page-description-output" class="output-box">
+          Click to get an AI description of the current page.
+        </div>
+      </div>
+
+      <!-- Text to Speech -->
+      <div class="feature-card">
+        <h3>Text to Speech</h3>
+        <textarea id="tts-text-input" class="tts-textarea" placeholder="Type or paste text here..." rows="3"></textarea>
+        <div class="tts-controls-row">
+          <label class="control-label" for="tts-voice-select">Voice:</label>
+          <select id="tts-voice-select" class="tts-select"></select>
+        </div>
+        <div class="tts-controls-row">
+          <label class="control-label" for="tts-rate-input">Speed: <span id="tts-rate-value">1.0</span>x</label>
+          <input type="range" id="tts-rate-input" class="tts-range" min="0.5" max="2.0" step="0.1" value="1.0">
+        </div>
+        <div class="tts-actions">
+          <button id="tts-speak-btn" class="btn-primary-sm">Speak</button>
+          <button id="tts-stop-btn" class="btn-secondary-sm" disabled>Stop</button>
+        </div>
+      </div>
+
+      <!-- Speech to Text -->
+      <div class="feature-card">
+        <h3>Speech to Text</h3>
+        <div class="stt-subtitles-area" id="stt-subtitles-container">
+          <div class="stt-empty-state" id="stt-empty-state">Ready to listen. Click Start below.</div>
+        </div>
+        <div class="stt-visualizer-wrapper">
+          <canvas id="stt-audio-visualizer" height="60"></canvas>
+        </div>
+        <button id="stt-toggle-btn" class="btn-action stt-btn">
+          <span id="stt-mic-icon">&#x1F3A4;</span>
+          <span id="stt-btn-text">Start Listening</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB: Accessibility / UI Editing -->
+  <div id="tab-accessibility" class="tab-panel" style="display:none;">
+    <div class="dashboard-section">
+
+      <div class="feature-card">
+        <h3>Accessibility Modes</h3>
+        <div class="toggles-list">
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F4D6;</span>
+              <div>
+                <strong>Dyslexia Friendly</strong>
+                <small>OpenDyslexic font &amp; spacing</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-dyslexia">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F3AF;</span>
+              <div>
+                <strong>ADHD Focus</strong>
+                <small>Reading ruler &amp; dimming</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-adhd">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F441;</span>
+              <div>
+                <strong>High Contrast</strong>
+                <small>Enhanced visual contrast</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-contrast">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F9E0;</span>
+              <div>
+                <strong>Cognitive Ease</strong>
+                <small>Simplify page layout</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-cognitive">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F50D;</span>
+              <div>
+                <strong>Large Text</strong>
+                <small>Increase font sizes</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-large-text">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F30A;</span>
+              <div>
+                <strong>Calm Mode</strong>
+                <small>Soothing color overlay</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-calm">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F520;</span>
+              <div>
+                <strong>Neuro-Bolding</strong>
+                <small>Bold first half of words</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-neuro">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F6D1;</span>
+              <div>
+                <strong>Seizure Guard</strong>
+                <small>Stop all animations</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-seizure">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+          <div class="toggle-item">
+            <div class="toggle-info">
+              <span class="toggle-icon">&#x1F517;</span>
+              <div>
+                <strong>Neon Links</strong>
+                <small>Highlight clickable items</small>
+              </div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="dash-mode-neon">
+              <span class="slider round"></span>
+            </label>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="status-card">
+        Active on: <strong id="dash-current-site">...</strong>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB: Settings -->
+  <div id="tab-settings" class="tab-panel" style="display:none;">
+    <div class="dashboard-section">
+      <div class="feature-card">
+        <h3>AI Provider Settings</h3>
+        <p class="card-description">Configure your AI provider and API key to enable the browser agent.</p>
+
+        <div class="settings-form">
+          <div class="form-group">
+            <label for="settings-provider">AI Provider</label>
+            <select id="settings-provider" class="settings-select">
+              <option value="claude">Claude (Anthropic)</option>
+              <option value="openai">OpenAI</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="settings-api-key">API Key</label>
+            <div class="api-key-wrapper">
+              <input type="password" id="settings-api-key" class="settings-input" placeholder="Enter your API key">
+              <button type="button" id="settings-toggle-key" class="btn-icon"
+                title="Show/Hide API Key">&#x1F441;</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="settings-intent-model">Intent Model</label>
+            <input type="text" id="settings-intent-model" class="settings-input"
+              placeholder="e.g., claude-3-5-haiku-20241022">
+          </div>
+
+          <div class="form-group">
+            <label for="settings-codegen-model">Code Generation Model</label>
+            <input type="text" id="settings-codegen-model" class="settings-input"
+              placeholder="e.g., claude-sonnet-4-20250514">
+          </div>
+
+          <button id="settings-save-btn" class="btn-primary">Save Settings</button>
+          <div id="settings-status" class="settings-status"></div>
+        </div>
+
+        <div class="feature-card">
+          <h3>Voice Workflow Settings</h3>
+          <p class="card-description">Grok API for voice workflow (auto-cycle). Falls back to Claude if Grok fails.</p>
+
+          <div class="settings-form">
+            <div class="form-group">
+              <label for="settings-grok-key">Grok API Key (xAI)</label>
+              <div class="api-key-wrapper">
+                <input type="password" id="settings-grok-key" class="settings-input"
+                  placeholder="Enter your Grok API key">
+                <button type="button" id="settings-toggle-grok-key" class="btn-icon"
+                  title="Show/Hide">&#x1F441;</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="settings-grok-model">Grok Model</label>
+              <input type="text" id="settings-grok-model" class="settings-input" placeholder="grok-2-latest">
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <h3>Default Models</h3>
+          <p class="card-description">Reference for default model names:</p>
+          <ul class="model-reference">
+            <li><strong>Grok:</strong> grok-2-latest</li>
+            <li><strong>Claude Intent:</strong> claude-3-5-haiku-20241022</li>
+            <li><strong>Claude CodeGen:</strong> claude-sonnet-4-20250514</li>
+            <li><strong>OpenAI Intent:</strong> gpt-4o-mini</li>
+            <li><strong>OpenAI CodeGen:</strong> gpt-4o</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Permission Modal for Microphone -->
+    <div class="modal-overlay" id="stt-permission-modal">
+      <div class="modal-content">
+        <h2>Microphone Access Blocked</h2>
+        <p>Please grant microphone permission to use speech-to-text.</p>
+        <button id="stt-fix-permission-btn" class="btn-action">Fix Permission</button>
+      </div>
+    </div>
+
+</body>
+
+</html>

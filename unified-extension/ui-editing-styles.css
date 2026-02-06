@@ -1,0 +1,135 @@
+/* Global Styles for iNTUition Extension */
+
+/* Font Face for Dyslexia */
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.1.0-beta/open-dyslexic-regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 1. Dyslexia Mode */
+.intuition-dyslexia-mode * {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', 'Chalkboard SE', sans-serif !important;
+    line-height: 2.0 !important;
+    letter-spacing: 0.1em !important;
+    word-spacing: 0.2em !important;
+}
+
+/* 2. High Contrast Mode */
+.intuition-contrast-mode {
+    filter: contrast(150%) saturate(120%) !important;
+    background-color: #000 !important;
+}
+
+.intuition-contrast-mode * {
+    background-color: #000 !important;
+    color: #ffd700 !important;
+    border-color: #ffd700 !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    fill: #ffd700 !important;
+}
+
+.intuition-contrast-mode img,
+.intuition-contrast-mode video,
+.intuition-contrast-mode svg {
+    filter: none !important;
+    background: transparent !important;
+}
+
+/* 3. Calm Mode */
+.intuition-calm-mode {
+    position: relative;
+}
+
+.intuition-calm-mode::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(186, 218, 203, 0.3);
+    pointer-events: none;
+    z-index: 2147483640;
+    mix-blend-mode: multiply;
+}
+
+/* 4. Cognitive Ease Mode */
+.intuition-cognitive-mode aside,
+.intuition-cognitive-mode .sidebar,
+.intuition-cognitive-mode .ads,
+.intuition-cognitive-mode .advertisement,
+.intuition-cognitive-mode iframe,
+.intuition-cognitive-mode .popup,
+.intuition-cognitive-mode .modal {
+    display: none !important;
+}
+
+.intuition-cognitive-mode main,
+.intuition-cognitive-mode article {
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    font-size: 1.2rem !important;
+}
+
+/* 5. ADHD Focus Ruler */
+#intuition-reading-ruler {
+    position: fixed;
+    left: 0;
+    width: 100vw;
+    height: 120px;
+    background: transparent;
+    box-shadow: 0 0 0 100in rgba(0, 0, 0, 0.85);
+    z-index: 2147483647;
+    pointer-events: none;
+    display: none;
+    transition: none;
+}
+
+/* 6. Large Text Mode */
+html.intuition-large-text {
+    font-size: 24px !important;
+}
+
+.intuition-large-text * {
+    font-size: 1.1rem !important;
+}
+
+/* 7. Seizure Guard (The Nuclear Fix) */
+.intuition-seizure-mode * {
+    animation-play-state: paused !important;
+    transition: none !important;
+}
+
+.intuition-seizure-mode video,
+.intuition-seizure-mode img[src$=".gif"],
+.intuition-seizure-mode canvas {
+    opacity: 0.1 !important;
+    /* Don't fully hide layout, just make faint/invisible */
+    pointer-events: none !important;
+}
+
+/* 8. Neon Links */
+.intuition-neon-mode a,
+.intuition-neon-mode button,
+.intuition-neon-mode [role="button"],
+.intuition-neon-mode input[type="submit"] {
+    border: 2px solid #00fff2 !important;
+    box-shadow: 0 0 10px #00fff2, inset 0 0 5px #00fff2 !important;
+    border-radius: 4px !important;
+    color: #00fff2 !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    font-weight: bold !important;
+}
+
+/* 9. Neuro Bolding */
+.neuro-active span b {
+    font-weight: 900 !important;
+    color: inherit;
+}
+
+body:not(.neuro-active) span b {
+    font-weight: inherit !important;
+}

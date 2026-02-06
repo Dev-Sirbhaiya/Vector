@@ -1,0 +1,1 @@
+{"version":3,"file":"networkMonitor.d.ts","sourceRoot":"","sources":["../../src/background/networkMonitor.ts"],"names":[],"mappings":"AAAA;;GAEG;AAEH,UAAU,cAAc;IACpB,GAAG,EAAE,MAAM,CAAC;IACZ,MAAM,EAAE,MAAM,CAAC;IACf,IAAI,EAAE,MAAM,CAAC;IACb,SAAS,EAAE,MAAM,CAAC;CACrB;AAMD,wBAAgB,sBAAsB,SASrC;AAED,wBAAgB,qBAAqB,SAMpC;AAoBD,wBAAgB,iBAAiB,CAAC,OAAO,GAAE,MAAU,GAAG,cAAc,EAAE,CAGvE"}

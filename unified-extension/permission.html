@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Grant Microphone Access</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 16px;
+            font-weight: 300;
+        }
+
+        p {
+            color: #94a3b8;
+            max-width: 400px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        .success {
+            display: none;
+            color: #4ade80;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="requestUI">
+        <div class="icon">🎙️</div>
+        <h1>Microphone Access Needed</h1>
+        <p>The Advanced Subtitles extension needs access to your microphone to generate subtitles. Chrome requires you
+            to grant this permission in a tab once.</p>
+        <button id="grantBtn">Allow Microphone</button>
+    </div>
+
+    <div id="successUI" class="success">
+        <div class="icon">✅</div>
+        <h1>Access Granted!</h1>
+        <p>You can now close this tab and use the extension side panel.</p>
+    </div>
+
+    <script src="permission.js"></script>
+</body>
+
+</html>
