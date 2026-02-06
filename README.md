@@ -1,134 +1,420 @@
-# iNTUition-2026
 
-## Overview
-iNTUition-2026 is a Chrome Extension workspace that combines an AI browser agent with accessibility and voice-control features. The project is organized into two main parts:
+# 🧠 iNTUition-2026- Vector — AI Browser Agent and Accessibility Intelligence
 
-- **browser-ai-agent/**: the TypeScript source code for the extension (React UI + background + content scripts).
-- **unified-extension/**: a built, unified bundle that integrates the agent UI with extra voice and accessibility dashboards.
+> A next-generation Chrome Extension that transforms browsing into an AI-assisted, voice-driven, accessibility-first experience.
 
-At a high level, the extension lets users:
-- chat with an AI assistant in a side panel to control the current page,
-- execute actions like scroll, click, and form filling via content scripts,
-- describe the current page using DOM extraction + LLM prompts,
-- enable accessibility overlays (contrast, dyslexia, focus aids, etc.),
-- configure AI providers/models and API keys via the options/settings UI,
-- optionally use voice commands and a voice workflow (STT/TTS loop).
 
-## Repository Structure
+**iNTUition-2026** is an intelligent browser co-pilot designed to make web interaction:
 
-### Top-level
-- **README.md** — project documentation (this file).
-- **browser-ai-agent/** — source, build config, and assets for the extension.
-- **unified-extension/** — compiled/bundled output plus additional integrated UI.
+* More **accessible**
+* More **automated**
+* More **natural (voice + chat controlled)**
+* More **context-aware**
 
-### browser-ai-agent/
-This folder contains the extension source code.
+The extension combines an **AI action agent**, **voice interaction pipeline**, and **adaptive accessibility system** into a single unified workspace.
 
-- **package.json** — dependencies, scripts, and build tooling.
-- **tsconfig.json** — TypeScript configuration.
-- **webpack.config.js** — build pipeline that produces bundled outputs in `dist/`.
-- **public/** — static assets (icons, etc.) copied into the build.
-- **src/manifest.json** — extension manifest (MV3) defining permissions, background, content scripts, and UI entry points.
+Instead of manually navigating webpages, users can **talk to the browser**, **chat with it**, or **enable assistive overlays** that adapt the interface to their needs.
 
-#### src/background/
-Background service worker responsible for orchestration and state:
+---
 
-- **index.ts** — registers lifecycle handlers (install/startup), loads settings, and routes messages between the UI and content scripts.
-- **aiClient.ts** — API client layer for AI providers.
-- **sessionManager.ts** — manages user sessions and memory/state.
-- **pipeline/** — multi-step processing flow:
-	- **intentLLM.ts** — interprets user intent.
-	- **codeGenLLM.ts** — generates action plans/code for execution.
-	- **executor.ts** — executes planned actions via content script messaging.
-	- **fastPath.ts** — short-circuit handling for simple commands.
-	- **safetyFilter.ts** — safeguards and confirmations for destructive actions.
+## 🧩 Core Vision
 
-#### src/content/
-Content script injected into every page:
+The system acts like a **browser operating system layer** that sits between:
 
-- **index.ts** — parses DOM into structured context, exposes actions like click/fill/scroll, and applies UI modifications on the page.
+```
+User → AI Agent → Browser DOM → Action Execution → Feedback
+```
 
-#### src/sidepanel/
-Side panel chat UI (React):
+It continuously follows an intelligent loop:
 
-- **App.tsx** — chat experience, message list, and status bar.
-- **index.tsx** — entry point that mounts the React app.
-- **index.html** — sidepanel shell template.
-- **styles/** — CSS for the side panel interface.
+```
+Observe → Understand → Plan → Act → Verify → Respond
+```
 
-#### src/options/
-Options/settings page (React):
+This enables the browser to become:
 
-- **App.tsx** — configuration UI (API keys, provider, models, behavior toggles).
-- **index.tsx** — entry point that mounts the React app.
-- **index.html** — options page template.
-- **styles.css** — page styling.
+* Context aware
+* Task capable
+* Accessibility adaptive
+* Voice controllable
 
-#### src/shared/
-Shared types and message contracts:
+---
 
-- **types/messages.ts** — message types between UI, background, and content scripts.
-- **types/pipeline.ts** — pipeline types and default settings.
-- **types/index.ts** — barrel exports.
+## 🏗️ System Architecture
 
-### unified-extension/
-This folder contains the compiled/bundled extension and additional dashboards integrated with the agent UI.
+The extension is divided into two major layers:
 
-- **manifest.json** — MV3 manifest with expanded permissions and multiple content scripts.
-- **background.js** — compiled background logic.
-- **content.js** — compiled content script.
-- **sidepanel.html / sidepanel.js** — agent UI bundled into the unified side panel.
-- **dashboard.js / dashboard.css** — additional integrated UI for voice + accessibility and settings.
-- **options.html / options.js** — compiled options page.
-- **content scripts:**
-	- **dom-extractor-content.js** — extracts structured DOM for page description.
-	- **ui-editing-content.js** — applies accessibility transformations.
-	- **ui-editing-interceptor.js** — early intercept layer in the main world.
+### 1️⃣ Development Source Layer
 
-## Functional Capabilities
+```
+browser-ai-agent/
+```
 
-### 1) AI Browser Agent (Side Panel)
-- Chat-based interface for issuing commands.
-- Interprets natural language requests and maps them to page actions.
-- Supports interaction patterns such as:
-	- scrolling and navigation,
-	- clicking elements by label or selector,
-	- filling forms and inputs,
-	- applying UI changes (e.g., larger text).
+Contains full TypeScript source code and modular architecture.
 
-### 2) Background Orchestration & Pipeline
-- Loads user settings from storage on startup/install.
-- Routes messages between the side panel and content scripts.
-- Pipeline stages include intent detection, code generation, execution, and safety filtering.
-- Session manager keeps track of conversational context and state.
+---
 
-### 3) Content Script Actions
-- Parses the current page into structured context to inform AI responses.
-- Executes page actions (click, fill, scroll).
-- Injects or removes styles for UI modifications.
+### 2️⃣ Unified Distribution Layer
 
-### 4) Settings & Provider Configuration
-- Options/Settings UI allows:
-	- provider selection (Claude/OpenAI/Grok as configured),
-	- API key entry,
-	- model configuration (intent + codegen).
-- Default settings are defined in shared pipeline types.
+```
+unified-extension/
+```
 
-### 5) Unified Extension Enhancements
-The unified build extends the base agent with:
+Compiled production bundle integrating:
 
-- **Voice control**: speech-to-text commands and voice workflow toggles.
-- **Text-to-speech**: reads page descriptions or responses aloud.
-- **DOM description**: extracts page structure and summarizes via AI.
-- **Accessibility tools**: dyslexia-friendly fonts, ADHD focus aids, high-contrast modes, calm overlays, seizure-safe modes, and link highlighting.
+* AI agent UI
+* Voice workflows
+* Accessibility dashboards
+* DOM description engines
 
-## How It Works (End-to-End)
-1. User opens the side panel and sends a command.
-2. The side panel posts a message to the background service worker.
-3. The background pipeline processes intent and builds an action plan.
-4. The content script executes actions in the active tab.
-5. Responses and results are relayed back to the side panel UI.
+---
 
-## Notes
-- The unified bundle is intended for distribution, while `browser-ai-agent/` is the primary development source.
-- All scripts target Chrome Extension Manifest V3.
+## ⚙️ How The System Works
+
+### Step 1 — User Interaction
+
+User can interact via:
+
+* Chat side panel
+* Voice commands
+* Accessibility toggles
+
+---
+
+### Step 2 — Background Intelligence Pipeline
+
+The background service worker:
+
+* Interprets user intent using LLMs
+* Generates action plans
+* Applies safety filters
+* Maintains session memory
+
+---
+
+### Step 3 — Browser Action Execution
+
+Content scripts:
+
+* Extract page DOM structure
+* Execute actions like:
+
+  * Clicking
+  * Scrolling
+  * Form filling
+  * UI transformations
+* Provide real-time page context
+
+---
+
+### Step 4 — Accessibility + Voice Adaptation
+
+Unified dashboards dynamically modify UI or interaction modes.
+
+---
+
+## ✨ Feature Overview
+
+### 🤖 AI Browser Agent
+
+* Natural language browser control
+* DOM-aware interaction
+* Multi-step task execution
+* Confirmation for risky actions
+* Page understanding and summarization
+
+---
+
+### 🎙️ Voice Workflow
+
+* Speech-to-Text command recognition
+* Text-to-Speech response playback
+* Hands-free browsing
+* Continuous voice control loop
+
+---
+
+### ♿ Accessibility Intelligence
+
+Supports adaptive overlays including:
+
+* High contrast modes
+* Dyslexia-friendly fonts
+* ADHD focus highlighting
+* Calm visual overlays
+* Seizure-safe color filtering
+* Link and element highlighting
+
+---
+
+### 🧠 Page Understanding Engine
+
+* Extracts structured DOM
+* Generates semantic page descriptions
+* Enables AI-guided navigation
+
+---
+
+### 🔧 Multi-Provider AI Support
+
+Supports configurable models such as:
+
+* OpenAI
+* Claude
+* Grok
+  *(Provider availability depends on user configuration.)*
+
+---
+
+## 📦 Repository Structure
+
+### Root
+
+```
+README.md
+browser-ai-agent/
+unified-extension/
+```
+
+---
+
+## 🧪 Development Source — browser-ai-agent/
+
+Contains full modular extension source.
+
+### 🔹 Background Service Worker
+
+Handles orchestration and AI pipeline.
+
+```
+background/
+ ├── index.ts
+ ├── aiClient.ts
+ ├── sessionManager.ts
+ └── pipeline/
+```
+
+Pipeline modules:
+
+* Intent interpretation
+* Action code generation
+* Execution engine
+* Fast path handling
+* Safety filtering
+
+---
+
+### 🔹 Content Scripts
+
+```
+content/index.ts
+```
+
+Responsibilities:
+
+* DOM parsing
+* Page interaction execution
+* Accessibility styling injection
+
+---
+
+### 🔹 Side Panel UI (React)
+
+```
+sidepanel/
+```
+
+Provides AI chat interface and interaction controls.
+
+---
+
+### 🔹 Options / Settings UI
+
+```
+options/
+```
+
+Allows users to configure:
+
+* AI providers
+* Models
+* Behaviour toggles
+* API keys
+
+---
+
+### 🔹 Shared Contracts
+
+```
+shared/types/
+```
+
+Defines message schemas and pipeline types.
+
+---
+
+## 📦 Unified Extension Layer — unified-extension/
+
+Compiled production extension bundle.
+
+Includes:
+
+* Integrated dashboards
+* Voice workflow modules
+* Accessibility engines
+* DOM extractor scripts
+* Final UI bundles
+
+---
+
+## 🛠️ Installation Guide
+
+### Step 1 — Load Extension
+
+1. Open Chrome
+2. Navigate to:
+
+```
+chrome://extensions
+```
+
+3. Enable **Developer Mode**
+4. Click **Load unpacked**
+5. Select the `unified-extension` folder
+
+---
+
+### Step 2 — Configure API Keys (IMPORTANT)
+
+⚠️ The extension **requires AI provider API keys before usage.**
+
+After installing:
+
+1. Open extension options/settings
+2. Enter API keys for your selected provider
+3. Select models for:
+
+   * Intent processing
+   * Action generation
+4. Save settings
+
+Without API keys, AI agent functionality will not operate.
+
+---
+
+## 🎮 Using The Extension
+
+### Open Side Panel
+
+* Launch the extension side panel
+* Start chatting or using voice commands
+
+---
+
+### Example Commands
+
+```
+Scroll down the page
+Click the login button
+Summarize this page
+Fill this form using my saved data
+Increase text readability
+```
+
+---
+
+### Accessibility Usage
+
+Users can toggle overlays to match their needs dynamically.
+
+---
+
+## 🔐 Safety & Guardrails
+
+The system prevents unsafe browser actions by:
+
+* Detecting destructive commands
+* Requesting confirmation
+* Filtering high-risk operations
+
+---
+
+## 🧠 Design Philosophy
+
+iNTUition is built around three principles:
+
+### 1️⃣ Human-First Interaction
+
+Browsing should feel conversational and natural.
+
+### 2️⃣ Universal Accessibility
+
+The browser adapts to users — not the other way around.
+
+### 3️⃣ Agentic Automation
+
+Users describe tasks, the agent executes them intelligently.
+
+---
+
+## 🔄 End-to-End Execution Flow
+
+```
+User Input
+   ↓
+Side Panel / Voice
+   ↓
+Background AI Pipeline
+   ↓
+Action Planning
+   ↓
+Content Script Execution
+   ↓
+Verification
+   ↓
+Response / UI Update
+```
+
+---
+
+## 🧰 Tech Stack
+
+* TypeScript
+* React
+* Chrome Extension MV3
+* Webpack
+* LLM API Integration
+* DOM Parsing Engines
+* Speech Processing APIs
+
+---
+
+## 🧭 Project Status
+
+Current Version:
+
+```
+iNTUition-2026 Prototype / Research Build
+```
+
+Focus Areas:
+
+* AI-driven browsing
+* Accessibility augmentation
+* Voice interaction
+* Agentic automation
+
+---
+
+## 📌 Notes
+
+* `browser-ai-agent/` is the primary development source.
+* `unified-extension/` is the deployable bundle.
+* Future versions may include:
+
+  * Persistent memory
+  * Cross-tab intelligence
+  * Multi-modal perception
+  * Adaptive impairment auto-detection
+
+
