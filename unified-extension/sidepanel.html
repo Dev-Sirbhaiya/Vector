@@ -35,16 +35,16 @@
 
   <!-- TAB NAVIGATION BAR -->
   <nav id="dashboard-nav" class="dashboard-nav">
-    <button class="nav-tab active" data-tab="agent">
-      <span class="nav-icon">&#x1F916;</span>
-      <span class="nav-label">Agent</span>
-    </button>
-    <button class="nav-tab" data-tab="voice">
+    <button class="nav-tab active" data-tab="voice">
       <span class="nav-icon">&#x1F3A4;</span>
       <span class="nav-label">Voice</span>
     </button>
+    <button class="nav-tab" data-tab="agent">
+      <span class="nav-icon">&#x1F916;</span>
+      <span class="nav-label">Agent</span>
+    </button>
     <button class="nav-tab" data-tab="accessibility">
-      <span class="nav-icon">&#x267F;</span>
+      <span class="nav-icon">&#x1F453;</span>
       <span class="nav-label">Access</span>
     </button>
     <button class="nav-tab" data-tab="settings">
@@ -93,13 +93,39 @@
   </div>
 
   <!-- TAB: AI Agent (the React app mounts here) -->
-  <div id="tab-agent" class="tab-panel active">
+  <div id="tab-agent" class="tab-panel">
     <div id="root"></div>
   </div>
 
   <!-- TAB: Voice Control -->
-  <div id="tab-voice" class="tab-panel" style="display:none;">
+  <div id="tab-voice" class="tab-panel active" style="display:none;">
     <div class="dashboard-section">
+
+      <!-- Speech to Text -->
+      <div class="feature-card">
+        <h3>Speech to Text</h3>
+        <div class="stt-subtitles-area" id="stt-subtitles-container">
+          <div class="stt-empty-state" id="stt-empty-state">Ready to listen. Click Start below.</div>
+        </div>
+        <div class="stt-visualizer-wrapper">
+          <canvas id="stt-audio-visualizer" height="60"></canvas>
+        </div>
+        <button id="stt-toggle-btn" class="btn-action stt-btn">
+          <span id="stt-mic-icon">&#x1F3A4;</span>
+          <span id="stt-btn-text">Start Listening</span>
+        </button>
+      </div>
+
+      <!-- DOM Page Description -->
+      <div class="feature-card">
+        <h3>Page Description</h3>
+        <button id="describe-page-btn" class="btn-action">
+          <span>&#x1F50D;</span> Describe Current Page
+        </button>
+        <div id="page-description-output" class="output-box">
+          Click to get an AI description of the current page.
+        </div>
+      </div>
 
       <!-- Voice Commands - Simple speak and execute -->
       <div class="voice-commands-card">
@@ -133,17 +159,6 @@
         <div id="workflow-step-indicator" class="step-indicator"></div>
       </div>
 
-      <!-- DOM Page Description -->
-      <div class="feature-card">
-        <h3>Page Description</h3>
-        <button id="describe-page-btn" class="btn-action">
-          <span>&#x1F50D;</span> Describe Current Page
-        </button>
-        <div id="page-description-output" class="output-box">
-          Click to get an AI description of the current page.
-        </div>
-      </div>
-
       <!-- Text to Speech -->
       <div class="feature-card">
         <h3>Text to Speech</h3>
@@ -160,21 +175,6 @@
           <button id="tts-speak-btn" class="btn-primary-sm">Speak</button>
           <button id="tts-stop-btn" class="btn-secondary-sm" disabled>Stop</button>
         </div>
-      </div>
-
-      <!-- Speech to Text -->
-      <div class="feature-card">
-        <h3>Speech to Text</h3>
-        <div class="stt-subtitles-area" id="stt-subtitles-container">
-          <div class="stt-empty-state" id="stt-empty-state">Ready to listen. Click Start below.</div>
-        </div>
-        <div class="stt-visualizer-wrapper">
-          <canvas id="stt-audio-visualizer" height="60"></canvas>
-        </div>
-        <button id="stt-toggle-btn" class="btn-action stt-btn">
-          <span id="stt-mic-icon">&#x1F3A4;</span>
-          <span id="stt-btn-text">Start Listening</span>
-        </button>
       </div>
 
     </div>
@@ -418,30 +418,28 @@
               placeholder="e.g., claude-sonnet-4-20250514">
           </div>
 
-          <button id="settings-save-btn" class="btn-primary">Save Settings</button>
-          <div id="settings-status" class="settings-status"></div>
-        </div>
-
-        <div class="feature-card">
+          <!-- Merged Voice Workflow Settings -->
+          <hr class="settings-divider" style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
           <h3>Voice Workflow Settings</h3>
-          <p class="card-description">Grok API for voice workflow (auto-cycle). Falls back to Claude if Grok fails.</p>
+          <p class="card-description" style="margin-bottom: 15px;">Grok API for voice workflow (auto-cycle). Falls back
+            to Claude if Grok fails.</p>
 
-          <div class="settings-form">
-            <div class="form-group">
-              <label for="settings-grok-key">Grok API Key (xAI)</label>
-              <div class="api-key-wrapper">
-                <input type="password" id="settings-grok-key" class="settings-input"
-                  placeholder="Enter your Grok API key">
-                <button type="button" id="settings-toggle-grok-key" class="btn-icon"
-                  title="Show/Hide">&#x1F441;</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="settings-grok-model">Grok Model</label>
-              <input type="text" id="settings-grok-model" class="settings-input" placeholder="grok-2-latest">
+          <div class="form-group">
+            <label for="settings-grok-key">Grok API Key (xAI)</label>
+            <div class="api-key-wrapper">
+              <input type="password" id="settings-grok-key" class="settings-input"
+                placeholder="Enter your Grok API key">
+              <button type="button" id="settings-toggle-grok-key" class="btn-icon" title="Show/Hide">&#x1F441;</button>
             </div>
           </div>
+
+          <div class="form-group">
+            <label for="settings-grok-model">Grok Model</label>
+            <input type="text" id="settings-grok-model" class="settings-input" placeholder="grok-2-latest">
+          </div>
+
+          <button id="settings-save-btn" class="btn-primary" style="margin-top: 20px;">Save Settings</button>
+          <div id="settings-status" class="settings-status"></div>
         </div>
 
         <div class="feature-card">
