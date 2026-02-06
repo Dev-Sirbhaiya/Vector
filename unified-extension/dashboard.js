@@ -94,8 +94,7 @@
         {
           id: 'blindness-complete',
           label: 'Blindness (complete)',
-          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true },
-          actions: ['enableVoiceWorkflow']
+          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true }
         },
         {
           id: 'low-vision',
@@ -135,14 +134,12 @@
         {
           id: 'deafness',
           label: 'Deafness',
-          prefs: { 'mode-neon': true },
-          actions: ['enableSTT']
+          prefs: { 'mode-neon': true }
         },
         {
           id: 'auditory-difficulty',
           label: 'Auditory difficulty',
-          prefs: { 'mode-neon': true },
-          actions: ['enableSTT']
+          prefs: { 'mode-neon': true }
         }
       ]
     },
@@ -152,8 +149,7 @@
         {
           id: 'limited-hand-mobility',
           label: 'Limited hand mobility',
-          prefs: { 'mode-neon': true, 'mode-contrast': true },
-          actions: ['enableVoiceCommands']
+          prefs: { 'mode-neon': true, 'mode-contrast': true }
         }
       ]
     },
@@ -192,42 +188,11 @@
     });
   }
 
-  function executeOnboardingActions(actions) {
-    if (!actions || !actions.length) return;
-
-    actions.forEach(function (action) {
-      if (action === 'enableVoiceWorkflow') {
-        var toggle = document.getElementById('voice-workflow-toggle');
-        if (toggle && !toggle.checked) {
-          toggle.checked = true;
-          toggle.dispatchEvent(new Event('change'));
-        }
-      } else if (action === 'enableVoiceCommands') {
-        var toggle = document.getElementById('voice-commands-toggle');
-        if (toggle && !toggle.checked) {
-          toggle.checked = true;
-          toggle.dispatchEvent(new Event('change'));
-        }
-      } else if (action === 'enableSTT') {
-        // Toggle STT if not listening
-        if (!sttIsListening) {
-          // Try button click to ensure UI sync
-          var btn = document.getElementById('stt-toggle-btn');
-          if (btn) btn.click();
-        }
-      }
-    });
-  }
-
-  function saveOnboardingPreferences(prefs, destTab) {
+  function saveOnboardingPreferences(prefs) {
     chrome.storage.sync.set({ preferences: prefs }, function () {
       updateAccessibilityTogglesFromPrefs(prefs);
       applyAccessibilityToActiveTab();
-      if (destTab) {
-        switchTab(destTab);
-      } else {
-        showAgentTab();
-      }
+      showAgentTab();
     });
   }
 
@@ -248,18 +213,7 @@
         btn.textContent = option.label;
         btn.addEventListener('click', function () {
           var prefs = buildPreferences(option.prefs);
-          var destTab = 'agent';
-          if (option.actions && option.actions.length > 0) {
-            executeOnboardingActions(option.actions);
-            // Check if we enabled any voice features
-            var hasVoiceAction = option.actions.some(function (a) {
-              return a === 'enableVoiceWorkflow' || a === 'enableVoiceCommands' || a === 'enableSTT';
-            });
-            if (hasVoiceAction) {
-              destTab = 'voice';
-            }
-          }
-          saveOnboardingPreferences(prefs, destTab);
+          saveOnboardingPreferences(prefs);
         });
         gtkyDetailOptions.appendChild(btn);
       });
