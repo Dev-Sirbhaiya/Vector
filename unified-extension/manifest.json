@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Browser Agent - Unified",
+  "name": "AI Browser Agent - Unified V2",
   "version": "1.0.0",
   "description": "AI-powered browser automation with accessibility, voice control, and DOM extraction",
   "permissions": [

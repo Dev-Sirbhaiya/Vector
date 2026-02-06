@@ -53,6 +53,45 @@
     </button>
   </nav>
 
+  <!-- TAB: Get To Know You (Onboarding) -->
+  <div id="tab-gettoknowyou" class="tab-panel gettoknowyou-panel" style="display:none;">
+    <div class="gettoknowyou">
+      <div class="gettoknowyou-header">
+        <h2>Get to know you</h2>
+        <p>Choose the option that fits you best. You can change this later in Access.</p>
+      </div>
+
+      <div id="gtky-category-view" class="gtky-view">
+        <div class="gtky-grid">
+          <button class="gtky-card" data-gtky-category="visual">
+            <span class="gtky-icon">👁️</span>
+            <span class="gtky-title">Visual impairment</span>
+          </button>
+          <button class="gtky-card" data-gtky-category="auditory">
+            <span class="gtky-icon">🦻</span>
+            <span class="gtky-title">Auditory impairment</span>
+          </button>
+          <button class="gtky-card" data-gtky-category="motor">
+            <span class="gtky-icon">✋</span>
+            <span class="gtky-title">Motor impairment</span>
+          </button>
+          <button class="gtky-card" data-gtky-category="cognitive">
+            <span class="gtky-icon">🧠</span>
+            <span class="gtky-title">Cognitive impairment</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="gtky-detail-view" class="gtky-view" style="display:none;">
+        <div class="gtky-detail-header">
+          <button id="gtky-back-btn" class="gtky-back">← Back</button>
+          <h3 id="gtky-detail-title">Choose an option</h3>
+        </div>
+        <div id="gtky-detail-options" class="gtky-list"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB: AI Agent (the React app mounts here) -->
   <div id="tab-agent" class="tab-panel active">
     <div id="root"></div>

@@ -12,24 +12,218 @@
 
   const navTabs = document.querySelectorAll('.nav-tab');
   const tabPanels = document.querySelectorAll('.tab-panel');
+  const navBar = document.getElementById('dashboard-nav');
+  const onboardingPanel = document.getElementById('tab-gettoknowyou');
+  const gtkyCategoryView = document.getElementById('gtky-category-view');
+  const gtkyDetailView = document.getElementById('gtky-detail-view');
+  const gtkyDetailTitle = document.getElementById('gtky-detail-title');
+  const gtkyDetailOptions = document.getElementById('gtky-detail-options');
+  const gtkyBackBtn = document.getElementById('gtky-back-btn');
+
+  function switchTab(targetTab) {
+    navTabs.forEach(function (t) { t.classList.remove('active'); });
+    tabPanels.forEach(function (p) {
+      p.style.display = 'none';
+      p.classList.remove('active');
+    });
+
+    var activeTab = Array.from(navTabs).find(function (t) {
+      return t.dataset.tab === targetTab;
+    });
+    if (activeTab) {
+      activeTab.classList.add('active');
+    }
+
+    var panel = document.getElementById('tab-' + targetTab);
+    if (panel) {
+      panel.style.display = 'block';
+      panel.classList.add('active');
+    }
+  }
+
+  function showOnboarding() {
+    if (navBar) navBar.style.display = 'none';
+    tabPanels.forEach(function (p) {
+      p.style.display = 'none';
+      p.classList.remove('active');
+    });
+    if (onboardingPanel) {
+      onboardingPanel.style.display = 'block';
+      onboardingPanel.classList.add('active');
+    }
+  }
+
+  function showAgentTab() {
+    if (navBar) navBar.style.display = 'flex';
+    switchTab('agent');
+  }
 
   navTabs.forEach(function (tab) {
     tab.addEventListener('click', function () {
       var targetTab = tab.dataset.tab;
+      switchTab(targetTab);
+    });
+  });
 
-      navTabs.forEach(function (t) { t.classList.remove('active'); });
-      tabPanels.forEach(function (p) {
-        p.style.display = 'none';
-        p.classList.remove('active');
-      });
+  // =============================================
+  // SECTION 1.5: GET TO KNOW YOU (ONBOARDING)
+  // Stores preferences in chrome.storage.sync
+  // =============================================
 
-      tab.classList.add('active');
-      var panel = document.getElementById('tab-' + targetTab);
-      if (panel) {
-        panel.style.display = 'block';
-        panel.classList.add('active');
+  var BASE_PREFERENCES = {
+    'mode-adhd': false,
+    'mode-calm': false,
+    'mode-cognitive': false,
+    'mode-contrast': false,
+    'mode-dyslexia': false,
+    'mode-large-text': false,
+    'mode-neon': false,
+    'mode-neuro': false,
+    'mode-seizure': false
+  };
+
+  var GTKY_OPTIONS = {
+    visual: {
+      title: 'Visual impairment',
+      options: [
+        {
+          id: 'blindness-complete',
+          label: 'Blindness (complete)',
+          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true }
+        },
+        {
+          id: 'low-vision',
+          label: 'Low vision',
+          prefs: { 'mode-large-text': true, 'mode-contrast': true }
+        },
+        {
+          id: 'color-blindness',
+          label: 'Color blindness',
+          prefs: { 'mode-contrast': true, 'mode-neon': true }
+        },
+        {
+          id: 'light-sensitivity',
+          label: 'Sensitivity to light',
+          prefs: { 'mode-calm': true, 'mode-seizure': true }
+        }
+      ]
+    },
+    auditory: {
+      title: 'Auditory impairment',
+      options: [
+        {
+          id: 'deafness',
+          label: 'Deafness',
+          prefs: { 'mode-neon': true }
+        },
+        {
+          id: 'auditory-difficulty',
+          label: 'Auditory difficulty',
+          prefs: { 'mode-neon': true }
+        }
+      ]
+    },
+    motor: {
+      title: 'Motor impairment',
+      options: [
+        {
+          id: 'limited-hand-mobility',
+          label: 'Limited hand mobility',
+          prefs: { 'mode-neon': true, 'mode-contrast': true }
+        }
+      ]
+    },
+    cognitive: {
+      title: 'Cognitive impairment',
+      options: [
+        {
+          id: 'dyslexia',
+          label: 'Dyslexia',
+          prefs: { 'mode-dyslexia': true, 'mode-neuro': true }
+        },
+        {
+          id: 'adhd',
+          label: 'ADHD',
+          prefs: { 'mode-adhd': true, 'mode-calm': true }
+        }
+      ]
+    }
+  };
+
+  function buildPreferences(prefsOverride) {
+    var prefs = Object.assign({}, BASE_PREFERENCES);
+    Object.keys(prefsOverride || {}).forEach(function (key) {
+      prefs[key] = prefsOverride[key];
+    });
+    return prefs;
+  }
+
+  function updateAccessibilityTogglesFromPrefs(prefs) {
+    if (!accessibilityToggles || !accessibilityToggles.forEach) return;
+    accessibilityToggles.forEach(function (item) {
+      var toggle = document.getElementById(item.dashId);
+      if (toggle) {
+        toggle.checked = !!prefs[item.storageKey];
       }
     });
+  }
+
+  function saveOnboardingPreferences(prefs) {
+    chrome.storage.sync.set({ preferences: prefs }, function () {
+      updateAccessibilityTogglesFromPrefs(prefs);
+      applyAccessibilityToActiveTab();
+      showAgentTab();
+    });
+  }
+
+  function showCategoryView() {
+    if (gtkyCategoryView) gtkyCategoryView.style.display = 'block';
+    if (gtkyDetailView) gtkyDetailView.style.display = 'none';
+  }
+
+  function showDetailView(categoryKey) {
+    if (!GTKY_OPTIONS[categoryKey]) return;
+    var data = GTKY_OPTIONS[categoryKey];
+    if (gtkyDetailTitle) gtkyDetailTitle.textContent = data.title;
+    if (gtkyDetailOptions) {
+      gtkyDetailOptions.innerHTML = '';
+      data.options.forEach(function (option) {
+        var btn = document.createElement('button');
+        btn.className = 'gtky-option';
+        btn.textContent = option.label;
+        btn.addEventListener('click', function () {
+          var prefs = buildPreferences(option.prefs);
+          saveOnboardingPreferences(prefs);
+        });
+        gtkyDetailOptions.appendChild(btn);
+      });
+    }
+    if (gtkyCategoryView) gtkyCategoryView.style.display = 'none';
+    if (gtkyDetailView) gtkyDetailView.style.display = 'block';
+  }
+
+  if (gtkyBackBtn) {
+    gtkyBackBtn.addEventListener('click', function () {
+      showCategoryView();
+    });
+  }
+
+  var gtkyCategoryButtons = document.querySelectorAll('[data-gtky-category]');
+  gtkyCategoryButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var categoryKey = button.dataset.gtkyCategory;
+      showDetailView(categoryKey);
+    });
+  });
+
+  chrome.storage.sync.get(['preferences'], function (result) {
+    var prefs = result.preferences;
+    if (prefs && Object.keys(prefs).length > 0) {
+      showAgentTab();
+    } else {
+      showOnboarding();
+      showCategoryView();
+    }
   });
 
   // =============================================
@@ -117,7 +311,13 @@
     };
 
     currentUtterance.onerror = function (event) {
-      console.error('Speech synthesis error:', event);
+      // Ignore "interrupted" or "canceled" errors as they are expected when stopping/interrupting
+      if (event.error === 'interrupted' || event.error === 'canceled') {
+        console.log('TTS Interrupted/Canceled');
+      } else {
+        console.error('Speech synthesis error:', event.error);
+      }
+
       ttsSpeakBtn.disabled = false;
       ttsStopBtn.disabled = true;
       if (onEndCallback) onEndCallback();
@@ -164,6 +364,102 @@
   var sttAnimationId = null;
   var sttCurrentInterimBubble = null;
 
+  // =============================================
+  // =============================================
+  // SECTION 3.5: WAKE WORD + TTS LEAKAGE FILTERING
+  // Track what TTS is saying and filter it from STT results
+  // to isolate user speech from TTS echo in microphone
+  // =============================================
+
+  var wakeWordInterrupted = false; // Flag to track if TTS was interrupted by wake word
+  var isTTSSpeaking = false; // Track if TTS is currently speaking
+  var currentTTSText = ''; // What the TTS is currently saying (for filtering)
+  var ttsTextWords = []; // Words from TTS text for matching
+
+  /**
+   * Set the current TTS text for leakage filtering
+   * Call this before speaking to track what's being said
+   */
+  function setTTSContext(text) {
+    currentTTSText = text.toLowerCase();
+    // Extract words for matching (remove punctuation, split)
+    ttsTextWords = currentTTSText
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(function (w) { return w.length > 2; }); // Only words > 2 chars
+    console.log('[TTS Filter] Tracking TTS words:', ttsTextWords.slice(0, 10).join(', ') + '...');
+  }
+
+  /**
+   * Clear TTS context when speech ends
+   */
+  function clearTTSContext() {
+    currentTTSText = '';
+    ttsTextWords = [];
+  }
+
+  /**
+   * Filter TTS leakage from speech recognition results
+   * Returns the filtered text (what the user actually said, not TTS echo)
+   */
+  function filterTTSLeakage(transcript) {
+    if (!isTTSSpeaking || ttsTextWords.length === 0) {
+      return transcript; // No filtering needed
+    }
+
+    var words = transcript.toLowerCase().split(/\s+/);
+    var filteredWords = [];
+
+    for (var i = 0; i < words.length; i++) {
+      var word = words[i].replace(/[^\w]/g, '');
+      // Keep the word if it's NOT in the TTS text OR if it's a wake word
+      if (word === 'buddy' || !ttsTextWords.includes(word)) {
+        filteredWords.push(words[i]);
+      }
+    }
+
+    var filtered = filteredWords.join(' ').trim();
+    if (filtered !== transcript.trim()) {
+      console.log('[TTS Filter] Filtered: "' + transcript + '" → "' + filtered + '"');
+    }
+    return filtered;
+  }
+
+  /**
+   * Check if transcript contains wake word after filtering TTS leakage
+   */
+  function containsWakeWord(transcript) {
+    var filtered = filterTTSLeakage(transcript);
+    return filtered.toLowerCase().includes('buddy');
+  }
+
+  /**
+   * Handle wake word detection - interrupt TTS and wait for command
+   */
+  function handleWakeWordDetected() {
+    console.log('[WakeWord] "Buddy" detected! Interrupting TTS...');
+    wakeWordInterrupted = true;
+    isTTSSpeaking = false;
+    clearTTSContext();
+
+    // Stop TTS immediately
+    if (synth.speaking) {
+      synth.cancel();
+    }
+
+    // IMPORTANT: Stop current STT to clear the "Buddy" word buffer
+    // so it doesn't get processed as a command
+    stopSTT();
+
+    updateStepIndicator('Yes? Listening for your command...');
+
+    // Say "Yes?" briefly
+    speakText('Yes?', function () {
+      // Restart STT to listen for the ACTUAL command
+      startSTT();
+    });
+  }
+
   // Speech Recognition Setup (same as system_mic/sidepanel.js setupRecognition)
   function setupRecognition() {
     if (!('webkitSpeechRecognition' in window)) {
@@ -195,6 +491,10 @@
     };
 
     r.onresult = function (event) {
+      // Guard: If we stopped listening (e.g. interruption triggered), ignore further results
+      // This prevents processing the wake word as a command
+      if (!sttIsListening) return;
+
       var finalTranscript = '';
       var interimTranscript = '';
 
@@ -209,8 +509,19 @@
 
       updateSubtitles(finalTranscript, interimTranscript);
 
+      // Check for "Vector" wake word during TTS playback (voice workflow)
+      // Use TTS leakage filtering to isolate user speech from TTS echo
+      if (voiceWorkflowActive && isTTSSpeaking) {
+        var allText = interimTranscript + ' ' + finalTranscript;
+        if (containsWakeWord(allText)) {
+          handleWakeWordDetected();
+          return; // Don't process as normal command
+        }
+      }
+
       // Voice workflow hook: when active and final transcript received, send to agent
-      if (finalTranscript && voiceWorkflowActive) {
+      // Only process if NOT during TTS (or TTS was interrupted)
+      if (finalTranscript && voiceWorkflowActive && !isTTSSpeaking) {
         stopSTT();
         voiceWorkflowSendCommand(finalTranscript.trim());
       }
@@ -355,8 +666,51 @@
   });
 
   // STT start/stop helpers
-  function startSTT() {
+  /**
+   * Request microphone permission explicitly
+   * This triggers the browser's permission dialog
+   */
+  async function requestMicrophonePermission() {
+    try {
+      // Check current permission state first
+      const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+
+      if (permissionStatus.state === 'granted') {
+        return true; // Already have permission
+      }
+
+      if (permissionStatus.state === 'denied') {
+        // Permission was previously denied, show the modal
+        showSTTPermissionModal();
+        return false;
+      }
+
+      // Permission state is 'prompt' - request it explicitly
+      // This MUST be called to trigger the browser permission dialog
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Stop the stream immediately - we just needed to trigger the permission
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+
+    } catch (err) {
+      console.error('Microphone permission request failed:', err);
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        showSTTPermissionModal();
+      } else {
+        showSTTSystemMessage('Microphone error: ' + err.message, 'error');
+      }
+      return false;
+    }
+  }
+
+  async function startSTT() {
     if (sttRecognition && !sttIsListening) {
+      // Request microphone permission FIRST - this triggers the browser dialog
+      const hasPermission = await requestMicrophonePermission();
+      if (!hasPermission) {
+        return; // Don't start if we don't have permission
+      }
+
       sttRecognition.start();
       setupVisualizer();
     }
@@ -474,6 +828,12 @@
       var oData = await resp.json();
       return oData.choices[0].message.content;
     } else if (provider === 'grok') {
+      // Fix for legacy default model name that causes 404
+      var actualModel = model;
+      if (model === 'grok-2-latest') {
+        actualModel = 'grok-beta';
+      }
+
       // Grok uses OpenAI-compatible API at api.x.ai
       var grokResp = await fetch('https://api.x.ai/v1/chat/completions', {
         method: 'POST',
@@ -482,7 +842,7 @@
           'Authorization': 'Bearer ' + apiKey
         },
         body: JSON.stringify({
-          model: model,
+          model: actualModel,
           max_tokens: 500,
           temperature: 0.3,
           messages: [
@@ -617,22 +977,17 @@
       })
     };
 
-    var systemPrompt = 'You are a screen reader assistant. Describe web pages concisely for users who cannot see the screen.';
+    var systemPrompt = 'You are Buddy, a friendly and warm AI assistant helping a visually impaired user browse the web. ' +
+      'Speak naturally and conversationally, like a helpful friend describing what you see. ' +
+      'Use a warm, casual tone - not robotic or list-like. Keep responses brief (2-4 sentences max).';
 
-    var userMessage = 'Based on the extracted DOM information below, provide a clear, concise description of what\'s displayed on this webpage.\n\n' +
-      'The description should:\n' +
-      '1. Start with what type of page/application this is\n' +
-      '2. Describe the main content and purpose\n' +
-      '3. List key sections and what they contain\n' +
-      '4. Mention important interactive elements (buttons, links, forms)\n' +
-      '5. Be easy to understand without seeing the actual page\n\n' +
-      'Keep the description under 200 words. Use plain language.\n\n' +
-      'PAGE TITLE: ' + pageContext.title + '\n' +
-      'URL: ' + pageContext.url + '\n\n' +
-      'SEMANTIC REGIONS:\n' + JSON.stringify(pageContext.semanticRegions, null, 2) + '\n\n' +
-      'KEY INTERACTIVE ELEMENTS:\n' + JSON.stringify(pageContext.interactiveElements, null, 2) + '\n\n' +
-      'STRUCTURED CONTENT (truncated):\n' + pageContext.structuredText.substring(0, 4000) + '\n\n' +
-      'Provide a clean, human-readable description:';
+    var userMessage = 'Describe this webpage naturally, as if you\'re a helpful friend. ' +
+      'Use conversational phrases like "You\'re on...", "I can see...", "Looks like...", "The main thing here is...". ' +
+      'Mention 1-2 key actions available. Be warm and brief - no lists or bullet points.\n\n' +
+      'Page: ' + pageContext.title + ' (' + pageContext.url.split('/')[2] + ')\n' +
+      'Main content: ' + pageContext.structuredText.substring(0, 1500) + '\n' +
+      'Key elements: ' + pageContext.interactiveElements.slice(0, 10).map(function (el) { return el.text; }).join(', ') + '\n\n' +
+      'Give a friendly, natural description:';
 
     // Try Grok first
     var grokSettings = await getGrokSettings();
@@ -851,7 +1206,24 @@
   async function startVoiceWorkflowCycle() {
     if (!voiceWorkflowActive) return;
 
+    // Reset flags at start of cycle
+    wakeWordInterrupted = false;
+    isTTSSpeaking = false;
+
     try {
+      // Step 0: Check for restricted URL (e.g. chrome://) and redirect to Google
+      // This is a workaround to ensure the extension can run content scripts
+      var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0] && (!tabs[0].url.startsWith('http'))) {
+        updateStepIndicator('Restricted page detected. Redirecting to Google...');
+        await chrome.tabs.update(tabs[0].id, { url: 'https://www.google.com' });
+
+        // Stop workflow so page can load. User can restart.
+        voiceWorkflowActive = false;
+        voiceWorkflowToggle.checked = false;
+        return;
+      }
+
       // Step 1: Extract DOM (only needed if describing page)
       var domData = null;
       var description = null;
@@ -862,17 +1234,33 @@
         domData = await extractDOMFromTab();
         if (!voiceWorkflowActive) return;
 
-        updateStepIndicator('AI is describing the page (Grok → Claude)...');
+        updateStepIndicator('Buddy is analyzing the page...');
         description = await describePageForVoiceWorkflow(domData);
         pageDescriptionOutput.textContent = description;
         if (!voiceWorkflowActive) return;
 
-        // Step 3: Speak the description via TTS
-        updateStepIndicator('Speaking page description...');
+        // Step 3: Start STT FIRST (so it can hear "Vector" during TTS)
+        // Then speak the description
+        updateStepIndicator('Speaking... (say "Vector" to interrupt)');
+
+        // Start continuous STT listening BEFORE TTS starts
+        startSTT();
+
+        // Mark TTS as speaking so STT knows to check for wake word
+        isTTSSpeaking = true;
+        setTTSContext(description); // Track what we're saying to filter it out
+
         await new Promise(function (resolve) {
-          speakText(description, resolve);
+          speakText(description, function () {
+            isTTSSpeaking = false;
+            clearTTSContext();
+            resolve();
+          });
         });
-        if (!voiceWorkflowActive) return;
+
+        // If wake word was detected, we already switched to command mode
+        // The STT is still running and will process the next command
+        if (wakeWordInterrupted || !voiceWorkflowActive) return;
 
       } catch (descErr) {
         // If page description fails (no API key, etc), skip to listening
@@ -886,9 +1274,13 @@
         if (!voiceWorkflowActive) return;
       }
 
-      // Step 4: Listen for user command via STT
+      // Step 4: STT is already running from Step 3
+      // Just update the indicator - STT onresult will handle commands
       updateStepIndicator('Listening for your command...');
-      startSTT();
+      // If STT wasn't started yet (due to description error path), start it now
+      if (!sttIsListening) {
+        startSTT();
+      }
       // The STT onresult handler (Section 3) will detect voiceWorkflowActive
       // and call voiceWorkflowSendCommand() when a final transcript arrives.
 
@@ -909,8 +1301,25 @@
   async function voiceWorkflowSendCommand(command) {
     if (!voiceWorkflowActive) return;
 
+    var lowerCommand = command.toLowerCase().trim();
+
+    // Check for "continue" command - resume the workflow cycle
+    if (lowerCommand === 'continue' || lowerCommand === 'go on' ||
+      lowerCommand === 'never mind' || lowerCommand === 'nevermind' ||
+      lowerCommand === 'nothing' || lowerCommand === 'cancel') {
+      console.log('[VoiceWorkflow] Continue/cancel command detected, resuming cycle');
+      updateStepIndicator('Okay, continuing...');
+      await new Promise(function (resolve) {
+        speakText('Okay.', resolve);
+      });
+      if (voiceWorkflowActive) {
+        startVoiceWorkflowCycle();
+      }
+      return;
+    }
+
     try {
-      updateStepIndicator('Processing: "' + command + '" (Grok → Claude)...');
+      updateStepIndicator('Processing: "' + command + '"...');
 
       var tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       var tabId = tabs[0] ? tabs[0].id : undefined;
@@ -1233,7 +1642,7 @@
         codeGenModel = defaultModels[provider].codegen;
       }
       if (!grokModel) {
-        grokModel = 'grok-2-latest';
+        grokModel = 'grok-beta';
       }
 
       // Validate - need at least one API key
