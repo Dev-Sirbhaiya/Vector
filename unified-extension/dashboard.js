@@ -79,7 +79,12 @@
     'mode-large-text': false,
     'mode-neon': false,
     'mode-neuro': false,
-    'mode-seizure': false
+    'mode-seizure': false,
+    // Color blindness modes (mutually exclusive)
+    'mode-deuteranopia': false,
+    'mode-protanopia': false,
+    'mode-tritanopia': false,
+    'mode-achromatopsia': false
   };
 
   var GTKY_OPTIONS = {
@@ -89,7 +94,8 @@
         {
           id: 'blindness-complete',
           label: 'Blindness (complete)',
-          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true }
+          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true },
+          actions: ['enableVoiceWorkflow']
         },
         {
           id: 'low-vision',
@@ -97,9 +103,24 @@
           prefs: { 'mode-large-text': true, 'mode-contrast': true }
         },
         {
-          id: 'color-blindness',
-          label: 'Color blindness',
-          prefs: { 'mode-contrast': true, 'mode-neon': true }
+          id: 'deuteranopia',
+          label: 'Deuteranopia (red-green)',
+          prefs: { 'mode-deuteranopia': true }
+        },
+        {
+          id: 'protanopia',
+          label: 'Protanopia (red-cone)',
+          prefs: { 'mode-protanopia': true }
+        },
+        {
+          id: 'tritanopia',
+          label: 'Tritanopia (blue-yellow)',
+          prefs: { 'mode-tritanopia': true }
+        },
+        {
+          id: 'achromatopsia',
+          label: 'Achromatopsia (grayscale)',
+          prefs: { 'mode-achromatopsia': true }
         },
         {
           id: 'light-sensitivity',
@@ -114,12 +135,14 @@
         {
           id: 'deafness',
           label: 'Deafness',
-          prefs: { 'mode-neon': true }
+          prefs: { 'mode-neon': true },
+          actions: ['enableSTT']
         },
         {
           id: 'auditory-difficulty',
           label: 'Auditory difficulty',
-          prefs: { 'mode-neon': true }
+          prefs: { 'mode-neon': true },
+          actions: ['enableSTT']
         }
       ]
     },
@@ -129,7 +152,8 @@
         {
           id: 'limited-hand-mobility',
           label: 'Limited hand mobility',
-          prefs: { 'mode-neon': true, 'mode-contrast': true }
+          prefs: { 'mode-neon': true, 'mode-contrast': true },
+          actions: ['enableVoiceCommands']
         }
       ]
     },
@@ -168,11 +192,42 @@
     });
   }
 
-  function saveOnboardingPreferences(prefs) {
+  function executeOnboardingActions(actions) {
+    if (!actions || !actions.length) return;
+
+    actions.forEach(function (action) {
+      if (action === 'enableVoiceWorkflow') {
+        var toggle = document.getElementById('voice-workflow-toggle');
+        if (toggle && !toggle.checked) {
+          toggle.checked = true;
+          toggle.dispatchEvent(new Event('change'));
+        }
+      } else if (action === 'enableVoiceCommands') {
+        var toggle = document.getElementById('voice-commands-toggle');
+        if (toggle && !toggle.checked) {
+          toggle.checked = true;
+          toggle.dispatchEvent(new Event('change'));
+        }
+      } else if (action === 'enableSTT') {
+        // Toggle STT if not listening
+        if (!sttIsListening) {
+          // Try button click to ensure UI sync
+          var btn = document.getElementById('stt-toggle-btn');
+          if (btn) btn.click();
+        }
+      }
+    });
+  }
+
+  function saveOnboardingPreferences(prefs, destTab) {
     chrome.storage.sync.set({ preferences: prefs }, function () {
       updateAccessibilityTogglesFromPrefs(prefs);
       applyAccessibilityToActiveTab();
-      showAgentTab();
+      if (destTab) {
+        switchTab(destTab);
+      } else {
+        showAgentTab();
+      }
     });
   }
 
@@ -193,7 +248,18 @@
         btn.textContent = option.label;
         btn.addEventListener('click', function () {
           var prefs = buildPreferences(option.prefs);
-          saveOnboardingPreferences(prefs);
+          var destTab = 'agent';
+          if (option.actions && option.actions.length > 0) {
+            executeOnboardingActions(option.actions);
+            // Check if we enabled any voice features
+            var hasVoiceAction = option.actions.some(function (a) {
+              return a === 'enableVoiceWorkflow' || a === 'enableVoiceCommands' || a === 'enableSTT';
+            });
+            if (hasVoiceAction) {
+              destTab = 'voice';
+            }
+          }
+          saveOnboardingPreferences(prefs, destTab);
         });
         gtkyDetailOptions.appendChild(btn);
       });
@@ -1452,8 +1518,31 @@
     { dashId: 'dash-mode-calm', storageKey: 'mode-calm' },
     { dashId: 'dash-mode-neuro', storageKey: 'mode-neuro' },
     { dashId: 'dash-mode-seizure', storageKey: 'mode-seizure' },
-    { dashId: 'dash-mode-neon', storageKey: 'mode-neon' }
+    { dashId: 'dash-mode-neon', storageKey: 'mode-neon' },
+    // Color blindness modes (mutually exclusive)
+    { dashId: 'dash-mode-deuteranopia', storageKey: 'mode-deuteranopia', colorBlind: true },
+    { dashId: 'dash-mode-protanopia', storageKey: 'mode-protanopia', colorBlind: true },
+    { dashId: 'dash-mode-tritanopia', storageKey: 'mode-tritanopia', colorBlind: true },
+    { dashId: 'dash-mode-achromatopsia', storageKey: 'mode-achromatopsia', colorBlind: true }
   ];
+
+  // Color blindness toggle IDs for mutual exclusivity
+  var colorBlindToggleIds = [
+    'dash-mode-deuteranopia',
+    'dash-mode-protanopia',
+    'dash-mode-tritanopia',
+    'dash-mode-achromatopsia'
+  ];
+
+  // Enforce mutual exclusivity: only one color blindness mode at a time
+  function handleColorBlindMutualExclusivity(activatedId) {
+    colorBlindToggleIds.forEach(function (id) {
+      if (id !== activatedId) {
+        var toggle = document.getElementById(id);
+        if (toggle) toggle.checked = false;
+      }
+    });
+  }
 
   // Load saved settings (same as UI editing/popup/popup.js)
   chrome.storage.sync.get(['preferences'], function (result) {
@@ -1463,6 +1552,10 @@
       if (toggle) {
         toggle.checked = prefs[item.storageKey] || false;
         toggle.addEventListener('change', function () {
+          // Enforce mutual exclusivity for color blindness modes
+          if (item.colorBlind && toggle.checked) {
+            handleColorBlindMutualExclusivity(item.dashId);
+          }
           saveAccessibilityPreferences();
           applyAccessibilityToActiveTab();
         });

@@ -133,3 +133,87 @@ html.intuition-large-text {
 body:not(.neuro-active) span b {
     font-weight: inherit !important;
 }
+
+/* ========================================
+   COLOR BLINDNESS ACCESSIBILITY MODES
+   SVG filters are injected by ui-editing-content.js
+   ======================================== */
+
+/* 10. Deuteranopia Mode - Green-cone deficiency
+   - Replaces red/green with blue/orange contrasts
+   - Converts green buttons → blue
+   - Adds borders/icons emphasis for status indicators
+*/
+.intuition-deuteranopia-mode {
+    filter: url(#intuition-deuteranopia-filter) !important;
+}
+
+.intuition-deuteranopia-mode img,
+.intuition-deuteranopia-mode video,
+.intuition-deuteranopia-mode canvas,
+.intuition-deuteranopia-mode svg {
+    filter: url(#intuition-deuteranopia-filter) !important;
+}
+
+/* 11. Protanopia Mode - Red-cone deficiency
+   - Replaces red with orange/magenta
+   - Increases brightness and luminance contrast
+   - Avoids red-black and red-brown contrasts
+*/
+.intuition-protanopia-mode {
+    filter: url(#intuition-protanopia-filter) brightness(1.1) !important;
+}
+
+.intuition-protanopia-mode img,
+.intuition-protanopia-mode video,
+.intuition-protanopia-mode canvas,
+.intuition-protanopia-mode svg {
+    filter: url(#intuition-protanopia-filter) brightness(1.1) !important;
+}
+
+/* 12. Tritanopia Mode - Blue-cone deficiency
+   - Replaces blue/yellow with teal/orange
+   - Ensures links are underlined (not just color-coded)
+   - Increases saturation and luminance separation
+*/
+.intuition-tritanopia-mode {
+    filter: url(#intuition-tritanopia-filter) saturate(1.2) !important;
+}
+
+.intuition-tritanopia-mode img,
+.intuition-tritanopia-mode video,
+.intuition-tritanopia-mode canvas,
+.intuition-tritanopia-mode svg {
+    filter: url(#intuition-tritanopia-filter) saturate(1.2) !important;
+}
+
+/* Tritanopia: Underline all links since color alone is unreliable */
+.intuition-tritanopia-mode a {
+    text-decoration: underline !important;
+}
+
+/* 13. Achromatopsia Mode - Complete color blindness (grayscale)
+   - Full grayscale conversion
+   - Maximum black-white contrast
+   - Relies on shape, borders, and contrast only
+*/
+.intuition-achromatopsia-mode {
+    filter: url(#intuition-achromatopsia-filter) contrast(1.3) !important;
+}
+
+.intuition-achromatopsia-mode img,
+.intuition-achromatopsia-mode video,
+.intuition-achromatopsia-mode canvas,
+.intuition-achromatopsia-mode svg {
+    filter: url(#intuition-achromatopsia-filter) contrast(1.3) !important;
+}
+
+/* Achromatopsia: Add strong borders to distinguish interactive elements */
+.intuition-achromatopsia-mode a,
+.intuition-achromatopsia-mode button,
+.intuition-achromatopsia-mode [role="button"],
+.intuition-achromatopsia-mode input,
+.intuition-achromatopsia-mode select {
+    border: 2px solid #000 !important;
+    outline: 1px solid #fff !important;
+}
