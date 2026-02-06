@@ -58,6 +58,11 @@
     switchTab('agent');
   }
 
+  function showVoiceTab() {
+    if (navBar) navBar.style.display = 'flex';
+    switchTab('voice');
+  }
+
   navTabs.forEach(function (tab) {
     tab.addEventListener('click', function () {
       var targetTab = tab.dataset.tab;
@@ -94,7 +99,7 @@
         {
           id: 'blindness-complete',
           label: 'Blindness (complete)',
-          prefs: { 'mode-contrast': true, 'mode-large-text': true, 'mode-neon': true }
+          prefs: { 'mode-contrast': false, 'mode-large-text': false, 'mode-neon': false }
         },
         {
           id: 'low-vision',
@@ -188,11 +193,24 @@
     });
   }
 
-  function saveOnboardingPreferences(prefs) {
+  function enableVoiceWorkflow() {
+    if (!voiceWorkflowToggle) return;
+    if (!voiceWorkflowToggle.checked) {
+      voiceWorkflowToggle.checked = true;
+      voiceWorkflowToggle.dispatchEvent(new Event('change'));
+    }
+  }
+
+  function saveOnboardingPreferences(prefs, options) {
     chrome.storage.sync.set({ preferences: prefs }, function () {
       updateAccessibilityTogglesFromPrefs(prefs);
       applyAccessibilityToActiveTab();
-      showAgentTab();
+      if (options && options.goToVoice) {
+        showVoiceTab();
+        enableVoiceWorkflow();
+      } else {
+        showAgentTab();
+      }
     });
   }
 
@@ -212,8 +230,10 @@
         btn.className = 'gtky-option';
         btn.textContent = option.label;
         btn.addEventListener('click', function () {
-          var prefs = buildPreferences(option.prefs);
-          saveOnboardingPreferences(prefs);
+          var isBlindnessComplete = option.id === 'blindness-complete';
+          var isMotorImpairment = categoryKey === 'motor';
+          var prefs = buildPreferences((isBlindnessComplete || isMotorImpairment) ? {} : option.prefs);
+          saveOnboardingPreferences(prefs, { goToVoice: isBlindnessComplete || isMotorImpairment });
         });
         gtkyDetailOptions.appendChild(btn);
       });
