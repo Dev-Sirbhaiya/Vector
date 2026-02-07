@@ -185,7 +185,7 @@ export async function processPipeline(
 
       if (attempt >= maxAttempts && lastError) {
         overallSuccess = false;
-        messages.push(`Failed: ${action.description} (${lastError})`);
+        // SILENCE: Do not add any failure message to the user-facing array
         session.recordAction({ type: action.actionType, description: action.description }, false);
       }
     }
