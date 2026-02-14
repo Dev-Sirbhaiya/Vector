@@ -2,7 +2,7 @@
   <img src="unified-extension/icons/icon128.png" alt="Vector Logo" width="120" />
 </p>
 
-<h1 align="center">Vector — AI Browser Agent & Accessibility Intelligence</h1>
+<h1 align="center">Vector — AI Browser Agent & Accessibility Intelligence-Top 10 Finalists in iNTUition</h1>
 
 <p align="center">
   <strong>Voice-controlled, accessibility-first Chrome extension with AI-powered browser automation</strong>
