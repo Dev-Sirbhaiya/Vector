@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="unified-extension/icons/icon128.png" alt="Vector Logo" width="120" />
-</p>
+
 
 <h1 align="center">Vector — AI Browser Agent & Accessibility Intelligence-Top 10 Finalists in iNTUition</h1>
 
