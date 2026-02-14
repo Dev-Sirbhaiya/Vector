@@ -4,8 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AI Browser Agent</title>
+  <title>Vector Buddy</title>
   <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="tracking.css">
   <style>
     /* Preserve the original agent styles exactly */
     * {
@@ -29,6 +30,8 @@
   <script defer="defer" src="sidepanel.js"></script>
   <!-- Dashboard integration module -->
   <script defer src="dashboard.js"></script>
+  <!-- Tracking features (eye & finger tracking) -->
+  <script defer src="tracking-manager.js"></script>
 </head>
 
 <body>
@@ -50,6 +53,10 @@
     <button class="nav-tab" data-tab="settings">
       <span class="nav-icon">&#x2699;</span>
       <span class="nav-label">Settings</span>
+    </button>
+    <button class="nav-tab" data-tab="tracking">
+      <span class="nav-icon">&#x1F3AF;</span>
+      <span class="nav-label">Track</span>
     </button>
   </nav>
 
@@ -470,6 +477,42 @@
           <div id="settings-status" class="settings-status"></div>
         </div>
 
+        <!-- Permissions Section -->
+        <hr class="settings-divider" style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+        <h3>Permissions</h3>
+        <p class="card-description" style="margin-bottom: 15px;">Grant microphone and camera access for voice and
+          tracking features.</p>
+
+        <div class="permission-list">
+          <div class="permission-item">
+            <div class="permission-info">
+              <span class="permission-icon">&#x1F3A4;</span>
+              <div>
+                <strong>Microphone</strong>
+                <small>Required for voice commands &amp; speech-to-text</small>
+              </div>
+            </div>
+            <div class="permission-actions">
+              <span class="permission-status" id="perm-mic-status">Checking…</span>
+              <button class="btn-perm" id="perm-mic-btn">Grant</button>
+            </div>
+          </div>
+
+          <div class="permission-item">
+            <div class="permission-info">
+              <span class="permission-icon">&#x1F4F7;</span>
+              <div>
+                <strong>Camera</strong>
+                <small>Required for eye &amp; finger tracking</small>
+              </div>
+            </div>
+            <div class="permission-actions">
+              <span class="permission-status" id="perm-cam-status">Checking…</span>
+              <button class="btn-perm" id="perm-cam-btn">Grant</button>
+            </div>
+          </div>
+        </div>
+
         <div class="feature-card">
           <h3>Default Models</h3>
           <p class="card-description">Reference for default model names:</p>
@@ -492,6 +535,171 @@
         <button id="stt-fix-permission-btn" class="btn-action">Fix Permission</button>
       </div>
     </div>
+
+  </div> <!-- close tab-settings -->
+
+  <!-- TAB: Tracking (Eye & Finger) -->
+  <div id="tab-tracking" class="tab-panel" style="display:none;">
+    <div class="dashboard-section">
+
+      <!-- Camera Preview -->
+      <div class="tracking-camera-card">
+        <h3>Camera &amp; Tracking</h3>
+        <div class="camera-preview-wrapper" id="tracking-camera-preview">
+          <div class="camera-placeholder">
+            <span class="cam-icon">&#x1F4F7;</span>
+            <span>Camera off</span>
+          </div>
+        </div>
+        <div class="tracking-status-bar">
+          <span class="tracking-status-dot" id="tracking-status-dot"></span>
+          <span id="tracking-status-text">Ready &mdash; toggle a feature to start</span>
+        </div>
+      </div>
+
+      <!-- Eye Tracking -->
+      <div class="tracking-feature-card eye-card">
+        <div class="tracking-card-header">
+          <h3>&#x1F441; Eye Tracking</h3>
+          <label class="switch">
+            <input type="checkbox" id="eye-tracking-toggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <p class="tracking-card-desc">
+          Move the cursor with your eyes. Your webcam tracks iris position
+          and translates gaze direction into cursor movement on the active page.
+        </p>
+
+        <button id="calibrate-btn" class="calibrate-btn" style="margin-bottom: 15px; width: 100%;">
+          🎯 Calibrate Eye Tracking
+        </button>
+
+        <div class="tracking-slider-group">
+          <div class="tracking-slider-label">
+            <span>Sensitivity</span>
+            <span class="tracking-slider-value" id="eye-sensitivity-value">1.5x</span>
+          </div>
+          <input type="range" class="tracking-slider" id="eye-sensitivity-slider" min="0.5" max="3.0" step="0.1"
+            value="1.5">
+        </div>
+
+        <div class="tracking-slider-group">
+          <div class="tracking-slider-label">
+            <span>Dwell Click Time</span>
+            <span class="tracking-slider-value" id="dwell-time-value">1.2s</span>
+          </div>
+          <input type="range" class="tracking-slider" id="dwell-time-slider" min="500" max="3000" step="100"
+            value="1200">
+        </div>
+
+        <div class="tracking-slider-group">
+          <div class="tracking-slider-label">
+            <span>Smoothing</span>
+            <span class="tracking-slider-value" id="smoothing-value">25%</span>
+          </div>
+          <input type="range" class="tracking-slider" id="smoothing-slider" min="0.05" max="0.6" step="0.05"
+            value="0.25">
+        </div>
+
+        <div class="gesture-list">
+          <div class="gesture-list-title">Gestures</div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x1F440;</span>
+            <div class="gesture-info">
+              <strong>Look</strong>
+              <span>Cursor follows your gaze direction</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x23F3;</span>
+            <div class="gesture-info">
+              <strong>Dwell Click</strong>
+              <span>Hold gaze steady on an element to click</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x1F609;</span>
+            <div class="gesture-info">
+              <strong>Wink (Left Eye)</strong>
+              <span>Quick left-eye wink to click instantly</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x2B06;&#x2B07;</span>
+            <div class="gesture-info">
+              <strong>Edge Scroll</strong>
+              <span>Look at top/bottom edges to scroll the page</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finger Tracking -->
+      <div class="tracking-feature-card hand-card">
+        <div class="tracking-card-header">
+          <h3>&#x270B; Finger Tracking</h3>
+          <label class="switch">
+            <input type="checkbox" id="finger-tracking-toggle">
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <p class="tracking-card-desc">
+          Control the cursor with hand gestures. Point with your index finger
+          to move the cursor, pinch to click, and use the peace sign to scroll.
+        </p>
+
+        <div class="tracking-slider-group">
+          <div class="tracking-slider-label">
+            <span>Sensitivity</span>
+            <span class="tracking-slider-value" id="finger-sensitivity-value">1.2x</span>
+          </div>
+          <input type="range" class="tracking-slider" id="finger-sensitivity-slider" min="0.5" max="3.0" step="0.1"
+            value="1.2">
+        </div>
+
+        <div class="gesture-list">
+          <div class="gesture-list-title">Gestures</div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x261D;</span>
+            <div class="gesture-info">
+              <strong>Point</strong>
+              <span>Index finger up, others down &mdash; cursor follows fingertip</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x1F91C;</span>
+            <div class="gesture-info">
+              <strong>Pinch Click</strong>
+              <span>Touch thumb to index finger &mdash; triggers a click</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x270C;</span>
+            <div class="gesture-info">
+              <strong>Peace Sign (Scroll)</strong>
+              <span>Index + middle up &mdash; move hand up/down to scroll</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x270A;</span>
+            <div class="gesture-info">
+              <strong>Fist</strong>
+              <span>All fingers closed &mdash; pauses cursor movement</span>
+            </div>
+          </div>
+          <div class="gesture-item">
+            <span class="gesture-icon">&#x1F590;</span>
+            <div class="gesture-info">
+              <strong>Open Palm</strong>
+              <span>All fingers open &mdash; stops tracking action</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
 </body>
 

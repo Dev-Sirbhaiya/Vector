@@ -1,0 +1,31 @@
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment & secrets
+*.env
+*.env.local
+*.env.development
+*.env.production
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build artifacts
+dist/
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Documentation source (not needed in repo)
+*.docx
+
+# Large binary/ML model files (re-download via setup-tracking.ps1)
+*.wasm
+*.task

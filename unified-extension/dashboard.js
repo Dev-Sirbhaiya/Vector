@@ -506,8 +506,8 @@
 
     console.log(
       "[TTS Filter] Tracking " +
-        ttsTextWords.length +
-        " description words. Filter ACTIVE.",
+      ttsTextWords.length +
+      " description words. Filter ACTIVE.",
     );
   }
 
@@ -569,8 +569,8 @@
     if (normDescription.indexOf(normTranscript) !== -1) {
       console.log(
         '[TTS Filter] LEAKAGE (substring match): "' +
-          transcript.substring(0, 60) +
-          '..."',
+        transcript.substring(0, 60) +
+        '..."',
       );
       return true;
     }
@@ -595,20 +595,20 @@
     if (overlapRatio >= 0.7) {
       console.log(
         "[TTS Filter] LEAKAGE (word overlap " +
-          Math.round(overlapRatio * 100) +
-          '%): "' +
-          transcript.substring(0, 60) +
-          '..."',
+        Math.round(overlapRatio * 100) +
+        '%): "' +
+        transcript.substring(0, 60) +
+        '..."',
       );
       return true;
     }
 
     console.log(
       "[TTS Filter] PASSED (word overlap " +
-        Math.round(overlapRatio * 100) +
-        '%): "' +
-        transcript.substring(0, 60) +
-        '..."',
+      Math.round(overlapRatio * 100) +
+      '%): "' +
+      transcript.substring(0, 60) +
+      '..."',
     );
     return false;
   }
@@ -766,8 +766,8 @@
           // This is a genuine user command — clear the filter and process it
           console.log(
             '[VoiceWorkflow] Genuine command detected: "' +
-              finalTranscript.trim() +
-              '"',
+            finalTranscript.trim() +
+            '"',
           );
           clearPageDescriptionFilter();
           stopSTT();
@@ -801,13 +801,13 @@
   // Update STT UI (same as system_mic/sidepanel.js updateUI)
   function updateSTTUI(active) {
     if (active) {
-      sttBtnText.textContent = "Pause Listening";
-      sttToggleBtn.classList.add("active-state");
-      sttMicIcon.innerHTML = "&#x23F8;&#xFE0F;";
+      if (sttBtnText) sttBtnText.textContent = "Pause Listening";
+      if (sttToggleBtn) sttToggleBtn.classList.add("active-state");
+      if (sttMicIcon) sttMicIcon.innerHTML = "&#x23F8;&#xFE0F;";
     } else {
-      sttBtnText.textContent = "Start Listening";
-      sttToggleBtn.classList.remove("active-state");
-      sttMicIcon.innerHTML = "&#x1F3A4;";
+      if (sttBtnText) sttBtnText.textContent = "Start Listening";
+      if (sttToggleBtn) sttToggleBtn.classList.remove("active-state");
+      if (sttMicIcon) sttMicIcon.innerHTML = "&#x1F3A4;";
     }
   }
 
@@ -858,9 +858,101 @@
   }
 
   sttFixPermissionBtn.addEventListener("click", function () {
-    chrome.tabs.create({ url: chrome.runtime.getURL("permission.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("permission.html?type=microphone") });
     sttPermissionModal.classList.remove("visible");
   });
+
+  // =============================================
+  // SECTION 3.3: SETTINGS PERMISSION CONTROLS
+  // Microphone & Camera permission status + grant buttons
+  // =============================================
+
+  var permMicStatus = document.getElementById("perm-mic-status");
+  var permMicBtn = document.getElementById("perm-mic-btn");
+  var permCamStatus = document.getElementById("perm-cam-status");
+  var permCamBtn = document.getElementById("perm-cam-btn");
+
+  /**
+   * Update the permission status badge UI for a given permission type.
+   * @param {string} state - 'granted', 'denied', or 'prompt'
+   * @param {HTMLElement} statusEl - The status badge element
+   * @param {HTMLElement} btnEl - The grant button element
+   */
+  function updatePermissionUI(state, statusEl, btnEl) {
+    if (!statusEl || !btnEl) return;
+
+    statusEl.className = "permission-status";
+    btnEl.className = "btn-perm";
+
+    if (state === "granted") {
+      statusEl.textContent = "Granted";
+      statusEl.classList.add("granted");
+      btnEl.textContent = "✓";
+      btnEl.classList.add("granted");
+    } else if (state === "denied") {
+      statusEl.textContent = "Denied";
+      statusEl.classList.add("denied");
+      btnEl.textContent = "Fix";
+    } else {
+      statusEl.textContent = "Not Set";
+      statusEl.classList.add("prompt");
+      btnEl.textContent = "Grant";
+    }
+  }
+
+  /**
+   * Check both microphone and camera permission states and update UI.
+   */
+  async function checkPermissionStatuses() {
+    try {
+      var micPerm = await navigator.permissions.query({ name: "microphone" });
+      updatePermissionUI(micPerm.state, permMicStatus, permMicBtn);
+      // Listen for changes (e.g. user grants in another tab)
+      micPerm.onchange = function () {
+        updatePermissionUI(micPerm.state, permMicStatus, permMicBtn);
+      };
+    } catch (e) {
+      if (permMicStatus) {
+        permMicStatus.textContent = "Unknown";
+      }
+    }
+
+    try {
+      var camPerm = await navigator.permissions.query({ name: "camera" });
+      updatePermissionUI(camPerm.state, permCamStatus, permCamBtn);
+      camPerm.onchange = function () {
+        updatePermissionUI(camPerm.state, permCamStatus, permCamBtn);
+      };
+    } catch (e) {
+      if (permCamStatus) {
+        permCamStatus.textContent = "Unknown";
+      }
+    }
+  }
+
+  // Check on load
+  checkPermissionStatuses();
+
+  // Re-check when sidepanel becomes visible (user returning from permission tab)
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+      checkPermissionStatuses();
+    }
+  });
+
+  // Grant buttons open the permission page in a new tab
+  if (permMicBtn) {
+    permMicBtn.addEventListener("click", function () {
+      chrome.tabs.create({ url: chrome.runtime.getURL("permission.html?type=microphone") });
+    });
+  }
+
+  if (permCamBtn) {
+    permCamBtn.addEventListener("click", function () {
+      chrome.tabs.create({ url: chrome.runtime.getURL("permission.html?type=camera") });
+    });
+  }
+
 
   // STT start/stop helpers
   /**
@@ -930,13 +1022,15 @@
   sttRecognition = setupRecognition();
 
   // Toggle button (same as system_mic/sidepanel.js)
-  sttToggleBtn.addEventListener("click", function () {
-    if (sttIsListening) {
-      stopSTT();
-    } else {
-      startSTT();
-    }
-  });
+  if (sttToggleBtn) {
+    sttToggleBtn.addEventListener("click", function () {
+      if (sttIsListening) {
+        stopSTT();
+      } else {
+        startSTT();
+      }
+    });
+  }
 
   // =============================================
   // SECTION 4: DOM DESCRIPTION
@@ -1311,19 +1405,25 @@
         if (voiceWorkflowActive && voiceWorkflowToggle) {
           voiceWorkflowToggle.checked = false;
           voiceWorkflowActive = false;
-          workflowStatusEl.textContent = "Off";
-          workflowStatusEl.classList.remove("active");
+          if (workflowStatusEl) {
+            workflowStatusEl.textContent = "Off";
+            workflowStatusEl.classList.remove("active");
+          }
         }
 
         voiceCommandsActive = true;
-        voiceCommandsStatus.textContent = "Listening";
-        voiceCommandsStatus.classList.add("active");
+        if (voiceCommandsStatus) {
+          voiceCommandsStatus.textContent = "Listening";
+          voiceCommandsStatus.classList.add("active");
+        }
         updateVoiceCommandsFeedback("Listening for your command...");
         startSTT();
       } else {
         voiceCommandsActive = false;
-        voiceCommandsStatus.textContent = "Off";
-        voiceCommandsStatus.classList.remove("active");
+        if (voiceCommandsStatus) {
+          voiceCommandsStatus.textContent = "Off";
+          voiceCommandsStatus.classList.remove("active");
+        }
         updateVoiceCommandsFeedback("");
         stopSTT();
         if (synth.speaking) synth.cancel();
@@ -1459,30 +1559,38 @@
   var workflowStatusEl = document.getElementById("workflow-status");
   var stepIndicator = document.getElementById("workflow-step-indicator");
 
-  voiceWorkflowToggle.addEventListener("change", function () {
-    if (voiceWorkflowToggle.checked) {
-      // Turn off voice commands if it's on
-      if (voiceCommandsActive && voiceCommandsToggle) {
-        voiceCommandsToggle.checked = false;
-        voiceCommandsActive = false;
-        voiceCommandsStatus.textContent = "Off";
-        voiceCommandsStatus.classList.remove("active");
-        updateVoiceCommandsFeedback("");
-      }
+  if (voiceWorkflowToggle) {
+    voiceWorkflowToggle.addEventListener("change", function () {
+      if (voiceWorkflowToggle.checked) {
+        // Turn off voice commands if it's on
+        if (voiceCommandsActive && voiceCommandsToggle) {
+          voiceCommandsToggle.checked = false;
+          voiceCommandsActive = false;
+          if (voiceCommandsStatus) {
+            voiceCommandsStatus.textContent = "Off";
+            voiceCommandsStatus.classList.remove("active");
+          }
+          updateVoiceCommandsFeedback("");
+        }
 
-      voiceWorkflowActive = true;
-      workflowStatusEl.textContent = "Active";
-      workflowStatusEl.classList.add("active");
-      startVoiceWorkflowCycle();
-    } else {
-      voiceWorkflowActive = false;
-      workflowStatusEl.textContent = "Off";
-      workflowStatusEl.classList.remove("active");
-      stopSTT();
-      if (synth.speaking) synth.cancel();
-      updateStepIndicator("");
-    }
-  });
+        voiceWorkflowActive = true;
+        if (workflowStatusEl) {
+          workflowStatusEl.textContent = "Active";
+          workflowStatusEl.classList.add("active");
+        }
+        startVoiceWorkflowCycle();
+      } else {
+        voiceWorkflowActive = false;
+        if (workflowStatusEl) {
+          workflowStatusEl.textContent = "Off";
+          workflowStatusEl.classList.remove("active");
+        }
+        stopSTT();
+        if (synth.speaking) synth.cancel();
+        updateStepIndicator("");
+      }
+    });
+  }
 
   async function startVoiceWorkflowCycle() {
     if (!voiceWorkflowActive) return;
@@ -1575,9 +1683,11 @@
     } catch (err) {
       updateStepIndicator("Error: " + err.message);
       voiceWorkflowActive = false;
-      voiceWorkflowToggle.checked = false;
-      workflowStatusEl.textContent = "Off";
-      workflowStatusEl.classList.remove("active");
+      if (voiceWorkflowToggle) voiceWorkflowToggle.checked = false;
+      if (workflowStatusEl) {
+        workflowStatusEl.textContent = "Off";
+        workflowStatusEl.classList.remove("active");
+      }
     }
   }
 

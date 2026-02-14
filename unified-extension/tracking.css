@@ -1,0 +1,306 @@
+/* ============================================
+   TRACKING TAB CSS
+   Eye Tracking & Finger Tracking features
+   ============================================ */
+
+#tab-tracking {
+  overflow-y: auto;
+  padding: 12px;
+  background: #f5f5f5;
+}
+
+#tab-tracking::-webkit-scrollbar {
+  width: 6px;
+}
+
+#tab-tracking::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#tab-tracking::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+/* --- Camera Preview --- */
+.tracking-camera-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-bottom: 0;
+}
+
+.tracking-camera-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.camera-preview-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #1e1e2e;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.camera-preview-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  border-radius: 8px;
+}
+
+.camera-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.camera-placeholder .cam-icon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+.tracking-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+  padding: 6px 10px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+.tracking-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+
+.tracking-status-dot.active {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.tracking-status-dot.error {
+  background: #ef4444;
+}
+
+.tracking-status-dot.loading {
+  background: #f59e0b;
+  animation: tracking-pulse 1s ease-in-out infinite;
+}
+
+@keyframes tracking-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* --- Eye Tracking Card --- */
+.tracking-feature-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tracking-feature-card.eye-card {
+  border-left: 3px solid #6366f1;
+}
+
+.tracking-feature-card.hand-card {
+  border-left: 3px solid #10b981;
+}
+
+.tracking-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.tracking-card-header h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tracking-card-desc {
+  font-size: 11px;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+/* --- Sliders --- */
+.tracking-slider-group {
+  margin-bottom: 10px;
+}
+
+.tracking-slider-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.tracking-slider-value {
+  color: #4F46E5;
+  font-weight: 700;
+}
+
+.tracking-slider {
+  width: 100%;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 2px;
+  background: #e5e7eb;
+  outline: none;
+  cursor: pointer;
+}
+
+.tracking-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #4F46E5;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Gesture List --- */
+.gesture-list {
+  margin-top: 10px;
+}
+
+.gesture-list-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.gesture-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 11px;
+}
+
+.gesture-item:last-child {
+  border-bottom: none;
+}
+
+.gesture-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.gesture-info strong {
+  display: block;
+  color: #1f2937;
+  font-size: 11px;
+  margin-bottom: 1px;
+}
+
+.gesture-info span {
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+/* --- Setup Warning --- */
+.tracking-setup-warning {
+  background: #FEF3C7;
+  border: 1px solid #F59E0B;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: #92400E;
+  line-height: 1.5;
+}
+
+.tracking-setup-warning strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #78350F;
+}
+
+.tracking-setup-warning code {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 10px;
+}
+
+/* --- Calibrate Button --- */
+.calibrate-btn {
+  background: #4F46E5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.calibrate-btn:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.calibrate-btn:active {
+  transform: translateY(0);
+  background: #3730a3;
+}

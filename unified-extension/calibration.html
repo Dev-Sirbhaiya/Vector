@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Eye Tracking Calibration</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            user-select: none;
+        }
+
+        #calibration-dot {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ef4444;
+            /* Red */
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
+            display: none;
+            /* Hidden initially */
+            z-index: 100;
+        }
+
+        #calibration-dot.recording {
+            background-color: #10b981;
+            /* Green */
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+        }
+
+        #instructions {
+            position: absolute;
+            top: 20%;
+            text-align: center;
+            font-size: 24px;
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+
+        #progress {
+            position: absolute;
+            bottom: 10%;
+            font-size: 18px;
+            color: #888;
+        }
+
+        .hidden {
+            opacity: 0 !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="instructions">
+        <h1>Eye Tracking Calibration</h1>
+        <p>Look at the dot.</p>
+        <p style="font-size: 18px; color: #aaa;">It will turn <span
+                style="color: #10b981; font-weight: bold;">GREEN</span> when recording.</p>
+        <p style="font-size: 16px; margin-top: 30px;">Click anywhere to start.</p>
+    </div>
+
+    <div id="calibration-dot"></div>
+    <div id="progress"></div>
+
+    <script src="calibration.js"></script>
+</body>
+
+</html>
